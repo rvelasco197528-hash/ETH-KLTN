@@ -1,1 +1,74 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Crypto Project</title>
+    <style>
+        body { font-family: sans-serif; background-color: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #1e1e1e; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; width: 300px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { width: 100%; padding: 10px; background-color: #f3ba2f; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .toggle-link { color: #f3ba2f; cursor: pointer; font-size: 0.8rem; margin-top: 10px; display: block; }
+        #crypto-dashboard { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="auth-form">
+    <h2 id="form-title">Login sa Crypto</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="main-btn" onclick="handleAuth()">Mag-Login</button>
+    <span class="toggle-link" id="toggle-text" onclick="toggleMode()">Wala pang account? Register dito.</span>
+</div>
+
+<div class="container" id="crypto-dashboard">
+    <h2>Ang Iyong Wallet</h2>
+    <p>Balance: <strong id="balance">100.00</strong> V-COIN</p>
+    <button style="background-color: #e74c3c; color: white;" onclick="logout()">Logout</button>
+</div>
+
+<script>
+    let isLogin = true;
+
+    function toggleMode() {
+        isLogin = !isLogin;
+        document.getElementById('form-title').innerText = isLogin ? "Login sa Crypto" : "Register sa Crypto";
+        document.getElementById('main-btn').innerText = isLogin ? "Mag-Login" : "Mag-Register";
+        document.getElementById('toggle-text').innerText = isLogin ? "Wala pang account? Register dito." : "May account na? Login dito.";
+    }
+
+    function handleAuth() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        if (email === "" || password === "") {
+            alert("Pakisagutan lahat ng fields.");
+            return;
+        }
+
+        // SIMULATION LANG ITO (Dahil kailangan ng Firebase setup para sa totoong database)
+        if (!isLogin) {
+            localStorage.setItem(email, password); // I-save sa browser (fake registration)
+            alert("Registered na! Pwede ka na mag-login.");
+            toggleMode();
+        } else {
+            const savedPass = localStorage.getItem(email);
+            if (savedPass === password) {
+                document.getElementById('auth-form').style.display = 'none';
+                document.getElementById('crypto-dashboard').style.display = 'block';
+            } else {
+                alert("Mali ang email o password.");
+            }
+        }
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
