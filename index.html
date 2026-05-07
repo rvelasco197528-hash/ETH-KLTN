@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ETH-SECURE | Global Archive Vault</title>
+    <!-- Ginamit ang mas matatag na Icon Library -->
     <link rel="stylesheet" href="https://cloudflare.com">
     <style>
         :root { --bg-body: #0b0e11; --sidebar: #111417; --card: #181a20; --border: #2b3139; --eth-blue: #627eea; --text-dim: #848e9c; --encryption: #0ecb81; --danger: #f6465d; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* LOADING SPINNER */
         .spinner { display: none; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--eth-blue); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -37,14 +37,19 @@
 
         /* WALLET MODAL (WHITE BOX) */
         #wallet-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 20000; }
-        .white-box { background: white; color: black; width: 350px; border-radius: 24px; padding: 30px; position: relative; text-align: left; }
+        .white-box { background: white; color: black; width: 350px; border-radius: 24px; padding: 30px; position: relative; text-align: left; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        
+        /* THE X BUTTON */
+        .close-x { position: absolute; top: 20px; right: 25px; font-size: 24px; color: #666; cursor: pointer; transition: 0.2s; }
+        .close-x:hover { color: black; }
+        
         .white-input { background: #f5f5f5; border: 1px solid #eee; width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; color: black; box-sizing: border-box; }
         .btn-connect { background: black; color: white; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<!-- 1. AUTH OVERLAY (Registration & OTP) -->
+<!-- 1. AUTH OVERLAY -->
 <div id="auth-overlay">
     <div class="auth-card" id="reg-box">
         <h2>Archive Access</h2>
@@ -52,15 +57,11 @@
         <div id="reg-loader" class="spinner"></div>
         <div id="reg-inputs">
             <input type="text" id="r-name" placeholder="Full Name">
-            <input type="date" id="r-birth" title="Birthdate" style="color: #848e9c;">
+            <input type="date" id="r-birth">
             <select id="r-country">
                 <option value="" disabled selected>Select Country</option>
                 <option value="Philippines">Philippines</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Canada">Canada</option>
-                <option value="Singapore">Singapore</option>
-                <option value="UAE">United Arab Emirates</option>
+                <option value="USA">United States</option>
                 <option value="Others">Others</option>
             </select>
             <input type="tel" id="r-phone" placeholder="Phone Number">
@@ -114,7 +115,6 @@
                 <thead><tr><th>Hash</th><th>Encrypted Timestamp</th><th>Value</th><th>Status</th></tr></thead>
                 <tbody>
                     <tr><td style="color: var(--eth-blue);">0x823b...7a2d</td><td style="color: var(--encryption);">0x66BC92...AF01</td><td style="color: var(--danger);">- 5.0000 ETH</td><td style="color: var(--encryption);">SECURE</td></tr>
-                    <tr><td style="color: var(--eth-blue);">0xf1a2...99bc</td><td style="color: var(--encryption);">0x66BC8E...B322</td><td style="color: var(--danger);">- 8.3600 ETH</td><td style="color: var(--encryption);">SECURE</td></tr>
                 </tbody>
             </table>
         </div>
@@ -124,11 +124,10 @@
 <!-- 4. WALLET LIST MODAL (WHITE BOX) -->
 <div id="wallet-modal">
     <div class="white-box">
-        <!-- ICONS (BACK & X) -->
-        <i class="fa-solid fa-arrow-left" style="position:absolute; top:25px; left:25px; cursor:pointer; color: #666;" onclick="closeModal()"></i>
-        <i class="fa-solid fa-xmark" style="position:absolute; top:25px; right:25px; cursor:pointer; color: #666; font-size: 20px;" onclick="closeModal()"></i>
+        <!-- ITO NA ANG X BUTTON MO -->
+        <i class="fa-solid fa-xmark close-x" onclick="closeModal()"></i>
         
-        <h2 style="margin: 40px 0 10px 0;">Wallet List</h2>
+        <h2 style="margin: 30px 0 10px 0;">Wallet List</h2>
         <p style="color: #666; font-size: 13px; margin-bottom: 25px;">Please set a main wallet to check tokens and NFTs.</p>
         
         <div id="modal-loader" class="spinner" style="border-left-color: black; width: 30px; height: 30px;"></div>
@@ -144,9 +143,8 @@
     let generatedOTP = "";
 
     function handleRegistration() {
-        const name = document.getElementById('r-name').value;
         const email = document.getElementById('r-email').value;
-        if (!name || !email.includes('@')) { alert("Please fill all details correctly."); return; }
+        if (!email.includes('@')) { alert("Please enter a valid email."); return; }
         
         document.getElementById('reg-inputs').style.display = 'none';
         document.getElementById('reg-loader').style.display = 'block';
