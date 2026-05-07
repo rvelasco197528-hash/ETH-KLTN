@@ -1,66 +1,76 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Crypto Project</title>
+    <title>Crypto Asset Management | Register</title>
     <style>
-        body { font-family: sans-serif; background-color: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #1e1e1e; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; width: 300px; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { width: 100%; padding: 10px; background-color: #f3ba2f; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .toggle-link { color: #f3ba2f; cursor: pointer; font-size: 0.8rem; margin-top: 10px; display: block; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0e11; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #181a20; padding: 35px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); text-align: center; width: 350px; border: 1px solid #2b2f36; }
+        h2 { margin-bottom: 25px; font-weight: 600; color: #eaecef; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #474d57; background: #2b2f36; color: white; box-sizing: border-box; }
+        input:focus { border-color: #f3ba2f; outline: none; }
+        button { width: 100%; padding: 12px; background-color: #f3ba2f; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; color: #1e2329; margin-top: 15px; transition: 0.3s; }
+        button:hover { background-color: #dba321; }
+        .toggle-link { color: #f3ba2f; cursor: pointer; font-size: 0.85rem; margin-top: 20px; display: block; text-decoration: none; }
         #crypto-dashboard { display: none; }
     </style>
 </head>
 <body>
 
+<!-- Register/Login Form -->
 <div class="container" id="auth-form">
-    <h2 id="form-title">Login sa Crypto</h2>
-    <input type="email" id="email" placeholder="Email">
+    <h2 id="form-title">Create Account</h2>
+    <input type="text" id="username" placeholder="Full Name">
+    <input type="email" id="email" placeholder="Email Address">
     <input type="password" id="password" placeholder="Password">
-    <button id="main-btn" onclick="handleAuth()">Mag-Login</button>
-    <span class="toggle-link" id="toggle-text" onclick="toggleMode()">Wala pang account? Register dito.</span>
+    <button id="main-btn" onclick="handleAuth()">Register</button>
+    <span class="toggle-link" id="toggle-text" onclick="toggleMode()">Already have an account? Log In</span>
 </div>
 
+<!-- Professional Dashboard -->
 <div class="container" id="crypto-dashboard">
-    <h2>Ang Iyong Wallet</h2>
-    <p>Balance: <strong id="balance">100.00</strong> V-COIN</p>
-    <button style="background-color: #e74c3c; color: white;" onclick="logout()">Logout</button>
+    <h2 style="color: #f3ba2f;">Dashboard</h2>
+    <p style="color: #848e9c;">Available Balance</p>
+    <h1 id="balance" style="margin: 10px 0;">$ 0.00</h1>
+    <p style="font-size: 0.9rem; color: #474d57;">Virtual Assets Locked</p>
+    <button style="background-color: #2b2f36; color: #eaecef; border: 1px solid #474d57;" onclick="logout()">Sign Out</button>
 </div>
 
 <script>
-    let isLogin = true;
+    let isLogin = false; // Naka-set sa false para Registration ang mauna
 
     function toggleMode() {
         isLogin = !isLogin;
-        document.getElementById('form-title').innerText = isLogin ? "Login sa Crypto" : "Register sa Crypto";
-        document.getElementById('main-btn').innerText = isLogin ? "Mag-Login" : "Mag-Register";
-        document.getElementById('toggle-text').innerText = isLogin ? "Wala pang account? Register dito." : "May account na? Login dito.";
+        document.getElementById('form-title').innerText = isLogin ? "Member Login" : "Create Account";
+        document.getElementById('main-btn').innerText = isLogin ? "Login" : "Register";
+        document.getElementById('toggle-text').innerText = isLogin ? "New here? Create an account" : "Already have an account? Log In";
+        document.getElementById('username').style.display = isLogin ? "none" : "block";
     }
 
     function handleAuth() {
         const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const pass = document.getElementById('password').value;
 
-        if (email === "" || password === "") {
-            alert("Pakisagutan lahat ng fields.");
+        if (email === "" || pass === "") {
+            alert("Please fill in all fields.");
             return;
         }
 
-        // SIMULATION LANG ITO (Dahil kailangan ng Firebase setup para sa totoong database)
         if (!isLogin) {
-            localStorage.setItem(email, password); // I-save sa browser (fake registration)
-            alert("Registered na! Pwede ka na mag-login.");
+            // Register Logic
+            localStorage.setItem(email, pass);
+            alert("Registration successful! Please login.");
             toggleMode();
         } else {
+            // Login Logic
             const savedPass = localStorage.getItem(email);
-            if (savedPass === password) {
+            if (savedPass === pass) {
                 document.getElementById('auth-form').style.display = 'none';
                 document.getElementById('crypto-dashboard').style.display = 'block';
+                document.getElementById('balance').innerText = "$ 1,250.00"; // Starting balance
             } else {
-                alert("Mali ang email o password.");
+                alert("Invalid email or password.");
             }
         }
     }
